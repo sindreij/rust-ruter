@@ -86,7 +86,7 @@ fn pretty_time(time: chrono::DateTime<UTC>) -> String {
     let seconds = seconds % 60;
 
     if minutes > 10 {
-        return format!("{}", time.format("%H:%M"))
+        return format!("{}", time.with_timezone(&chrono::Local).format("%H:%M"))
     }
 
     format!("{:>2}m {:>2}s", minutes, seconds)
