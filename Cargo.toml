@@ -1,0 +1,13 @@
+[package]
+name = "ruter"
+version = "0.1.0"
+authors = ["Sindre Johansen <sindreij@gmail.com>"]
+
+[dependencies]
+clap = "2.20.0"
+error-chain = "0.8.1"
+reqwest = "0.3.0"
+serde = "0.8"
+serde_json = "0.8"
+serde_derive = "0.8"
+chrono = { version = "0.2.*", features = ["serde"]}
