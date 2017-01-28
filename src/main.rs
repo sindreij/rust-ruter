@@ -8,13 +8,17 @@ extern crate serde_derive;
 extern crate serde_json;
 extern crate clap;
 extern crate chrono;
+extern crate regex;
 
 mod errors;
 mod api;
 mod stop;
 
+use std::collections::HashSet;
+
 use clap::{App, Arg};
 use chrono::{UTC};
+use regex::Regex;
 
 use errors::*;
 use stop::Stop;
@@ -40,12 +44,36 @@ fn run() -> Result<()> {
 
     println!("Avganger fra {}", stop.name);
 
-    for departure in departures.iter().take(10) {
-        println!("{:>3} {:25} {:>7} {}",
-            departure.line_number,
-            departure.destination,
-            pretty_time(departure.arrival_time),
-            departure.platform);
+    let direction_regex = Regex::new(r"^(\d*) \(([^()]*)\)$").unwrap();
+
+    let directions:HashSet<_> = departures.iter().map(|dep| {
+        direction_regex.captures(&dep.platform)
+            .map(|captures| captures.get(2).unwrap().as_str())
+    }).collect();
+
+    for direction in directions {
+        println!("");
+        if let Some(dirname) = direction {
+            println!("{}", dirname);
+        }
+
+        let departures = departures.iter()
+            .filter(|dep| {
+                let dep_direction = direction_regex.captures(&dep.platform)
+                    .map(|captures| captures.get(2).unwrap().as_str());
+                dep_direction == direction
+            });
+
+        for departure in departures.take(10) {
+            println!("{:>4} {:25} {:>7} {}",
+                departure.line_number,
+                departure.destination,
+                pretty_time(departure.arrival_time),
+                direction_regex.captures(&departure.platform)
+                    .map(|captures| captures.get(1).unwrap().as_str())
+                    .unwrap_or(&departure.platform),
+            );
+        }
     }
 
     Ok(())
